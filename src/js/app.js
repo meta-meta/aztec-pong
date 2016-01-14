@@ -9,37 +9,81 @@ import Cursor from './components/Cursor';
 import Light from './components/Light';
 import Sky from './components/Sky';
 
+class Paddle extends React.Component {
+    render () {
+        return (
+
+            <Entity geometry="primitive: box; width: 3; height: 1; depth: 0.1" material={{color: '#fff'}}
+        position={this.props.position}
+            rotation="0 90 0">
+            </Entity>
+        );
+    }
+}
+
+class Ball extends React.Component {
+    render () {
+        return (
+
+            <Entity geometry="primitive: sphere; radius: 0.25" material={{color: '#fff'}}
+                    position={this.props.position}>
+            </Entity>
+        );
+    }
+}
+
+class Pong extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+
+        }
+    }
+}
+
+
 class BoilerplateScene extends React.Component {
   constructor(props) {
-    super(props);
-    this.state = {
-      color: 'red'
-    }
+      super(props);
+      this.state = {
+          ballPosition: {x: 0, y: 0, z: -5},
+          velocity: {x: 1, y: 0, z: 0},
+          t: 0
+      }
   }
 
-  changeColor = () => {
-    const colors = ['red', 'orange', 'yellow', 'green', 'blue'];
-    this.setState({
-      color: colors[Math.floor(Math.random() * colors.length)],
-    });
-  };
+  componentDidMount () {
+    window.setInterval(this.tick.bind(this), 17)
+  }
+
+  tick () {
+    let dt_seconds = .017;
+    let {t, velocity, ballPosition} = this.state;
+    let {x,y,z} = ballPosition;
+
+      this.setState({
+          ballPosition: {
+              x: x + dt_seconds * velocity.x,
+              y: y + dt_seconds * velocity.y,
+              z: z + dt_seconds * velocity.z
+          },
+          t: t + dt_seconds
+      })
+  }
 
   render () {
+    let {x, y, z} = this.state.ballPosition;
     return (
       <Scene>
         <Camera><Cursor/></Camera>
 
         <Sky/>
 
-        <Light type="ambient" color="#888"/>
-        <Light type="directional" intensity="0.5" position="-1 1 0"/>
-        <Light type="directional" intensity="1" position="1 1 0"/>
+        <Light type="point" intensity="1" color="#0f0" position="-10 0 10"/>
 
-        <Entity geometry="primitive: box" material={{color: this.state.color}}
-                onClick={this.changeColor}
-                position="0 0 -5">
-          <Animation attribute="rotation" dur="5000" repeat="indefinite" to="0 360 360"/>
-        </Entity>
+        <Paddle position="-5 0 -5"/>
+        <Paddle position="5 0 -5"/>
+        <Ball position={`${x} ${y} ${z}`}/>
       </Scene>
     );
   }
