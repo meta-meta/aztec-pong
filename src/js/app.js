@@ -10,72 +10,76 @@ import Light from './components/Light';
 import Sky from './components/Sky';
 
 class Paddle extends React.Component {
-    render () {
-        return (
+  render() {
+    return (
 
-            <Entity geometry="primitive: box; width: 3; height: 1; depth: 0.1" material={{color: '#fff'}}
-        position={this.props.position}
-            rotation="0 90 0">
-            </Entity>
-        );
-    }
+      <Entity geometry="primitive: box; width: 3; height: 1; depth: 0.1"
+              material={{color: '#fff'}}
+              position={this.props.position}
+              rotation="0 90 0">
+      </Entity>
+    );
+  }
 }
 
 class Ball extends React.Component {
-    render () {
-        return (
+  render() {
+    return (
 
-            <Entity geometry="primitive: sphere; radius: 0.25" material={{color: '#fff'}}
-                    position={this.props.position}>
-            </Entity>
-        );
-    }
+      <Entity geometry="primitive: sphere; radius: 0.25"
+              material={{color: '#fff'}}
+              position={this.props.position}>
+      </Entity>
+    );
+  }
 }
 
 class Pong extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-
-        }
-    }
+  constructor(props) {
+    super(props);
+    this.state = {}
+  }
 }
 
 
 class BoilerplateScene extends React.Component {
   constructor(props) {
-      super(props);
-      this.state = {
-          ballPosition: {x: 0, y: 0, z: -5},
-          velocity: {x: 1, y: 0, z: 0},
-          t: 0
-      }
+    super(props);
+    this.state = {
+      ballPosition: {x: 0, y: 0, z: -5},
+      velocity: {x: 1, y: 0, z: 0},
+      t: 0
+    }
   }
 
-  componentDidMount () {
+  componentDidMount() {
     window.setInterval(this.tick.bind(this), 17)
   }
 
-  tick () {
+  tick() {
     let dt_seconds = .017;
     let {t, velocity, ballPosition} = this.state;
     let {x,y,z} = ballPosition;
 
-      this.setState({
-          ballPosition: {
-              x: x + dt_seconds * velocity.x,
-              y: y + dt_seconds * velocity.y,
-              z: z + dt_seconds * velocity.z
-          },
-          t: t + dt_seconds
-      })
+    if(x > 5) velocity = Object.assign({}, velocity, {x: -1});
+    if(x < -5) velocity = Object.assign({}, velocity, {x: 1});;
+
+    this.setState({
+      ballPosition: {
+        x: x + dt_seconds * velocity.x,
+        y: y + dt_seconds * velocity.y,
+        z: z + dt_seconds * velocity.z
+      },
+      t: t + dt_seconds,
+      velocity
+    })
   }
 
-  render () {
+  render() {
     let {x, y, z} = this.state.ballPosition;
     return (
       <Scene>
-        <Camera><Cursor/></Camera>
+        <Camera>{/*<Cursor/>*/}</Camera>
 
         <Sky/>
 
@@ -84,6 +88,9 @@ class BoilerplateScene extends React.Component {
         <Paddle position="-5 0 -5"/>
         <Paddle position="5 0 -5"/>
         <Ball position={`${x} ${y} ${z}`}/>
+        <Ball position={`${x} ${y + 1} ${z}`}/>
+        <Ball position={`${x * x} ${y + 1} ${z}`}/>
+        <Ball position={`${x * x * x} ${y + 1} ${z}`}/>
       </Scene>
     );
   }
