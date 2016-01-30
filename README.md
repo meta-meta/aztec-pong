@@ -15,3 +15,6 @@ node .
 
 
 Then head over to localhost:8080
+
+
+Send OSC messages over port `57121`
