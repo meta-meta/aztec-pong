@@ -3,6 +3,7 @@ import 'babel-polyfill';
 import {Animation, Entity, Scene} from 'aframe-react';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import OSC from 'osc/dist/osc-browser';
 
 import Camera from './components/Camera';
 import Cursor from './components/Cursor';
@@ -48,12 +49,34 @@ class BoilerplateScene extends React.Component {
     this.state = {
       ballPosition: {x: 0, y: 0, z: -5},
       velocity: {x: 1, y: 0, z: 0},
-      t: 0
+      t: 0,
+      osc: {}
     }
   }
 
   componentDidMount() {
-    window.setInterval(this.tick.bind(this), 17)
+    window.setInterval(this.tick.bind(this), 17);
+
+    this.oscPort = new OSC.WebSocketPort({
+      url: "ws://localhost:8081"
+    });
+
+
+    this.listen = () => {
+      this.oscPort.on("message", (msg) => {
+        if(msg.address == '/1/fader1') {
+          this.setState({osc: {f1: msg.args[0]}})
+        }
+      });
+    };
+
+    this.listen();
+    this.oscPort.open();
+
+    this.oscPort.socket.onmessage = (e) => {
+      console.log("message", e);
+    };
+
   }
 
   tick() {
@@ -88,7 +111,7 @@ class BoilerplateScene extends React.Component {
         <Paddle position="-5 0 -5"/>
         <Paddle position="5 0 -5"/>
         <Ball position={`${x} ${y} ${z}`}/>
-        <Ball position={`${x} ${y + 1} ${z}`}/>
+        <Ball position={`${x} ${y + 1 + this.state.osc.f1 || 0} ${z}`}/>
         <Ball position={`${x * x} ${y + 1} ${z}`}/>
         <Ball position={`${x * x * x} ${y + 1} ${z}`}/>
       </Scene>
