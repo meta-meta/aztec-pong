@@ -78,7 +78,9 @@ class Pedal extends React.Component {
 export class App extends React.Component {
   constructor(props) {
     super(props);
+    // this.handleKeyDown.bind(this);
     let arenaSize = 15;
+
     this.state = {
       arena: {
         width: arenaSize,
@@ -111,27 +113,28 @@ export class App extends React.Component {
   componentDidMount() {
     window.setInterval(this.tick.bind(this), 17);
 
+    window.addEventListener('keydown', this.handleKeyDown.bind(this));
+
     this.oscPort = new OSC.WebSocketPort({
       url: `ws://${window.location.hostname}:8081`
     });
 
-
     this.oscPort.on("message", (msg) => {
       let {osc, paddle1, paddle2} = this.state;
 
-      if(msg.address == '/1/fader1') {
+      if (msg.address == '/1/fader1') {
         osc.f1 = msg.args[0];
       }
 
-      if(msg.address == '/1/fader4') {
+      if (msg.address == '/1/fader4') {
         osc.f4 = msg.args[0];
       }
 
-      if(msg.address == '/stepper') {
+      if (msg.address == '/stepper') {
         osc.stairmaster = msg.args[0];
       }
 
-      if(msg.address == '/accxyz') {
+      if (msg.address == '/accxyz') {
         osc.acc = {x: msg.args[0], y: msg.args[2], z: msg.args[1]};
       }
 
@@ -142,6 +145,23 @@ export class App extends React.Component {
     });
 
     this.oscPort.open();
+  }
+
+  handleKeyDown(e) {
+    let {paddle1, paddle2, arena} = this.state;
+
+    if (e.keyCode === 38 && paddle1.z - paddle1.width/2 >= -arena.width/2) {
+      this.setState({
+        paddle1: Object.assign({}, paddle1, {z: paddle1.z - 0.2}),
+        paddle2: Object.assign({}, paddle2, {z: paddle2.z + 0.2})
+      });
+    }
+    if (e.keyCode === 40 && paddle1.z + paddle1.width/2 <= arena.width/2) {
+      this.setState({
+        paddle1: Object.assign({}, paddle1, {z: paddle1.z + 0.2}),
+        paddle2: Object.assign({}, paddle2, {z: paddle2.z - 0.2})
+      });
+    }
   }
 
   tick() {
@@ -170,6 +190,8 @@ export class App extends React.Component {
         velocity = Object.assign({}, velocity, {x: -1 * Math.abs(velocity.x)});
       }
     };
+    hitPaddle1();
+    hitPaddle2();
 
     //hit wall
     if (ball.z - ball.r < -arena.width/2) {
@@ -179,13 +201,9 @@ export class App extends React.Component {
       velocity = Object.assign({}, velocity, {z: -1 * Math.abs(velocity.z)});
     }
 
-
-    hitPaddle1();
-    hitPaddle2();
-
     if(Math.abs(ball.x) > 23/2) {
       this.setState({
-        // elevation: elevation + 1,
+        elevation: elevation + 1,
         ball: {x: 0, y, z, r, rotation}
       });
     } else {
@@ -234,7 +252,8 @@ export class App extends React.Component {
                 depth={paddle2.depth}
                 color="#aaf"/>
 
-        <Ball position={`${x} ${y} ${z}`} rotation={`0 ${rotation} 0`} radius={r} color={rgbToHex(128 + acc.x * 12.8, 128 + acc.y * 12.8, 128 + acc.z * 12.8)}/>
+        <Ball position={`${x} ${y} ${z}`} rotation={`0 ${rotation} 0`} radius={r}
+              color={rgbToHex(128 + acc.x * 12.8, 128 + acc.y * 12.8, 128 + acc.z * 12.8)}/>
 
         <Pedal position="-2 7 0" depression={this.state.osc.stairmaster || 0}/>
         <Pedal position="2 7 0" depression={1 - this.state.osc.stairmaster || 0}/>
