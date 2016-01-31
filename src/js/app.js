@@ -55,7 +55,8 @@ class Ball extends React.Component {
     return (
       <Entity geometry={{primitive: 'sphere', radius: this.props.radius}}
               material={{color: this.props.color, src: 'url(images/hazard.png)'}}
-              position={this.props.position}>
+              position={this.props.position}
+              rotation={this.props.rotation}>
       </Entity>
     );
   }
@@ -77,13 +78,14 @@ class Pedal extends React.Component {
 export class App extends React.Component {
   constructor(props) {
     super(props);
+    let arenaSize = 15;
     this.state = {
       arena: {
-        width: 10,
-        depth: 10
+        width: arenaSize,
+        depth: arenaSize
       },
       paddle1: {
-        x: -5,
+        x: -arenaSize/2,
         y: 0,
         z: 0,
         width: 1,
@@ -91,18 +93,18 @@ export class App extends React.Component {
         depth: 0.1
       },
       paddle2: {
-        x: 5,
+        x: arenaSize/2,
         y: 0,
         z: 0,
         width: 1,
         height: 0.5,
         depth: 0.1
       },
-      ball: {x: 0, y: 0, z: -5, r: 0.25},
-      velocity: {x: 2, y: 0, z: 0},
+      ball: {x: 0, y: 0, z: -5, r: 0.25, rotation: 0},
+      velocity: {x: 3, y: 0, z: 3},
       t: 0,
       osc: {acc: {}},
-      elevation: 0
+      elevation: 3
     }
   }
 
@@ -133,8 +135,8 @@ export class App extends React.Component {
         osc.acc = {x: msg.args[0], y: msg.args[2], z: msg.args[1]};
       }
 
-      paddle1.z = (osc.stairmaster - 0.5) * 10;
-      paddle2.z = (1 - osc.stairmaster - 0.5) * 10;
+      paddle1.z = (osc.stairmaster - 0.5) * this.state.arena.width;
+      paddle2.z = (1 - osc.stairmaster - 0.5) * this.state.arena.width;
 
       this.setState({osc, paddle1, paddle2});
     });
@@ -144,13 +146,13 @@ export class App extends React.Component {
 
   tick() {
     let dt_seconds = .017;
-    let {t, velocity, ball, paddle1, paddle2, elevation} = this.state;
-    let {x, y, z, r} = ball;
+    let {t, velocity, ball, paddle1, paddle2, arena, elevation} = this.state;
+    let {x, y, z, r, rotation} = ball;
 
     let isCollision = paddle => Math.abs(paddle.z - ball.z) < (paddle.width / 2 + ball.r);
 
     let hitPaddle1 = () => {
-      let ballEdge = ball.x + ball.r;
+      let ballEdge = ball.x - ball.r;
       let strikingSurface = paddle1.x + (paddle1.depth / 2);
       let backSurface = paddle1.x - (paddle1.depth / 2);
 
@@ -169,13 +171,22 @@ export class App extends React.Component {
       }
     };
 
+    //hit wall
+    if (ball.z - ball.r < -arena.width/2) {
+      velocity = Object.assign({}, velocity, {z: Math.abs(velocity.z)});
+    }
+    if (ball.z + ball.r > arena.width/2) {
+      velocity = Object.assign({}, velocity, {z: -1 * Math.abs(velocity.z)});
+    }
+
+
     hitPaddle1();
     hitPaddle2();
 
-    if(Math.abs(ball.x) > 7) {
+    if(Math.abs(ball.x) > 23/2) {
       this.setState({
-        elevation: elevation + 1,
-        ball: {x: 0, y, z, r}
+        // elevation: elevation + 1,
+        ball: {x: 0, y, z, r, rotation}
       });
     } else {
       this.setState({
@@ -183,21 +194,18 @@ export class App extends React.Component {
           x: x + dt_seconds * velocity.x,
           y: y + dt_seconds * velocity.y,
           z: z + dt_seconds * velocity.z,
-          r
+          r,
+          rotation: rotation + 360 * dt_seconds
         },
         t: t + dt_seconds,
         velocity
       });
     }
-
-
   }
 
   render() {
-    let {x, y, z, r} = this.state.ball;
-
+    let {x, y, z, r, rotation} = this.state.ball;
     let {acc} = this.state.osc;
-
     let {paddle1, paddle2} = this.state;
 
     return (
@@ -211,9 +219,9 @@ export class App extends React.Component {
 
         <Light type="point" intensity="2" distance="20" color="#0f0" position="100 -40 260"/>
 
-        <Temple position={`0 -50 55`}/>
+        <Temple position={`0 -40 56`}/>
 
-        <Arena position={`0 -1 -7`} width={this.state.width} height={0.1} depth={this.state.depth} />
+        <Arena position={`0 -0.4 0`} width={this.state.arena.width} height={0.1} depth={this.state.arena.depth} />
 
         <Paddle position={`${paddle1.x} ${paddle1.y} ${paddle1.z}`}
                 width={paddle1.width}
@@ -226,10 +234,10 @@ export class App extends React.Component {
                 depth={paddle2.depth}
                 color="#aaf"/>
 
-        <Ball position={`${x} ${y} ${z}`} radius={r} color={rgbToHex(128 + acc.x * 12.8, 128 + acc.y * 12.8, 128 + acc.z * 12.8)}/>
+        <Ball position={`${x} ${y} ${z}`} rotation={`0 ${rotation} 0`} radius={r} color={rgbToHex(128 + acc.x * 12.8, 128 + acc.y * 12.8, 128 + acc.z * 12.8)}/>
 
-        <Pedal position="-2 -3 0" depression={this.state.osc.stairmaster || 0}/>
-        <Pedal position="2 -3 0" depression={1 - this.state.osc.stairmaster || 0}/>
+        <Pedal position="-2 7 0" depression={this.state.osc.stairmaster || 0}/>
+        <Pedal position="2 7 0" depression={1 - this.state.osc.stairmaster || 0}/>
       </Scene>
     );
   }
