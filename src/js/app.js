@@ -16,7 +16,7 @@ class Temple extends React.Component {
   render() {
     return (
 
-      <Entity loader={{src: 'url(models/model_scene-temple_03.dae)', format: 'collada'}}
+      <Entity loader={{src: 'url(models/model_scene-temple_04.dae)', format: 'collada'}}
               rotation={`0 180 0`}
               position={this.props.position}>
       </Entity>
@@ -93,7 +93,6 @@ class Pedal extends React.Component {
 export class App extends React.Component {
   constructor(props) {
     super(props);
-    // this.handleKeyDown.bind(this);
     let arenaSize = 15;
 
     this.state = {
@@ -218,7 +217,7 @@ export class App extends React.Component {
 
     if(Math.abs(ball.x) > 23/2) {
       this.setState({
-        elevation: elevation + 1,
+        // elevation: elevation + 1,
         ball: {x: 0, y, z, r, rotation}
       });
     } else {

@@ -14,8 +14,8 @@
     <image id="tex_temple_02_jpg" name="tex_temple_02_jpg">
       <init_from>tex_temple_02.jpg</init_from>
     </image>
-    <image id="tex_terrain_01_jpg" name="tex_terrain_01_jpg">
-      <init_from>tex_terrain_01.jpg</init_from>
+    <image id="tex_terrain_02_jpg" name="tex_terrain_02_jpg">
+      <init_from>tex_terrain_02.jpg</init_from>
     </image>
     <image id="tex_tree_01_jpg" name="tex_tree_01_jpg">
       <init_from>tex_tree_01.jpg</init_from>
@@ -60,14 +60,14 @@
     </effect>
     <effect id="Material_001-effect">
       <profile_COMMON>
-        <newparam sid="tex_terrain_01_jpg-surface">
+        <newparam sid="tex_terrain_02_jpg-surface">
           <surface type="2D">
-            <init_from>tex_terrain_01_jpg</init_from>
+            <init_from>tex_terrain_02_jpg</init_from>
           </surface>
         </newparam>
-        <newparam sid="tex_terrain_01_jpg-sampler">
+        <newparam sid="tex_terrain_02_jpg-sampler">
           <sampler2D>
-            <source>tex_terrain_01_jpg-surface</source>
+            <source>tex_terrain_02_jpg-surface</source>
           </sampler2D>
         </newparam>
         <technique sid="common">
@@ -79,7 +79,7 @@
               <color sid="ambient">0 0 0 1</color>
             </ambient>
             <diffuse>
-              <texture texture="tex_terrain_01_jpg-sampler" texcoord="UVMap"/>
+              <texture texture="tex_terrain_02_jpg-sampler" texcoord="UVMap"/>
             </diffuse>
             <specular>
               <color sid="specular">0.5 0.5 0.5 1</color>
