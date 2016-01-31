@@ -223,7 +223,7 @@ export class App extends React.Component {
 
   render() {
     let {x, y, z, r, rotation} = this.state.ball;
-    let {acc} = this.state.osc;
+    let {acc, stairmaster} = this.state.osc;
     let {paddle1, paddle2} = this.state;
 
     return (
@@ -255,8 +255,13 @@ export class App extends React.Component {
         <Ball position={`${x} ${y} ${z}`} rotation={`0 ${rotation} 0`} radius={r}
               color={rgbToHex(128 + acc.x * 12.8, 128 + acc.y * 12.8, 128 + acc.z * 12.8)}/>
 
-        <Pedal position="-2 7 0" depression={this.state.osc.stairmaster || 0}/>
-        <Pedal position="2 7 0" depression={1 - this.state.osc.stairmaster || 0}/>
+        { stairmaster ?
+          <Entity>
+            <Pedal position="-2 7 0" depression={this.state.osc.stairmaster}/>
+            <Pedal position="2 7 0" depression={1 - this.state.osc.stairmaster}/>
+          </Entity> : null
+        }
+
       </Scene>
     );
   }
