@@ -5,6 +5,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import OSC from 'osc/dist/osc-browser';
 
+import rgbToHex from './util/util.js';
 import Camera from './components/Camera';
 import Cursor from './components/Cursor';
 import Light from './components/Light';
@@ -15,8 +16,9 @@ class Temple extends React.Component {
   render() {
     return (
 
-      <Entity loader={{src: 'url(models/model_scene-temple_01.dae)', format: 'collada'}}
+      <Entity loader={{src: 'url(models/model_scene-temple_02.dae)', format: 'collada'}}
               material={{src: 'url(images/hazard.png)'}}
+              rotation={`0 180 0`}
               position={this.props.position}>
       </Entity>
     );
@@ -59,13 +61,6 @@ class Pedal extends React.Component {
       </Entity>
     );
   }
-}
-
-function rgbToHex(r, g, b) {
-  function constrain(x) {
-    return Math.min(255, Math.max(0, Math.round(x)));
-  }
-  return "#" + ((1 << 24) + (constrain(r) << 16) + (constrain(g) << 8) + constrain(b)).toString(16).slice(1);
 }
 
 export class App extends React.Component {
@@ -148,7 +143,7 @@ export class App extends React.Component {
         <Light type="ambient" color="#666"/>
         <Light type="point" intensity="1" color="#ddd" position="-10 0 10"/>
 
-        <Temple position={`0 -10 0`}/>
+        <Temple position={`0 -12 0`}/>
 
         <Paddle position={`-5 0 ${-5 + this.state.osc.f1 * -5}`} />
         <Paddle position={`5 0 ${-5 + this.state.osc.f4 * -5}`} />
