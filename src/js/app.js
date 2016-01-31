@@ -10,6 +10,19 @@ import Cursor from './components/Cursor';
 import Light from './components/Light';
 import Sky from './components/Sky';
 
+
+class Temple extends React.Component {
+  render() {
+    return (
+
+      <Entity loader={{src: 'url(models/model_scene-temple_01.dae)', format: 'collada'}}
+              material={{src: 'url(images/hazard.png)'}}
+              position={this.props.position}>
+      </Entity>
+    );
+  }
+}
+
 class Paddle extends React.Component {
   render() {
     return (
@@ -27,8 +40,8 @@ class Ball extends React.Component {
   render() {
     return (
 
-      <Entity geometry="primitive: sphere; radius: 0.25"
-              material={{color: this.props.color}}
+      <Entity geometry="primitive: sphere; radius: 1.25"
+              material={{color: this.props.color, src: 'url(images/hazard.png)'}}
               position={this.props.position}>
       </Entity>
     );
@@ -40,7 +53,7 @@ class Pedal extends React.Component {
     return (
       <Entity rotation={`${-30 + 60 * this.props.depression} 0 0`} position={this.props.position}>
         <Entity geometry="primitive: box; width: 2; height: 0.5; depth: 3"
-                material={{color: '#555'}}
+                material={{color: '#555', metalness: 1}}
                 position="0 0 3"
         />
       </Entity>
@@ -55,7 +68,7 @@ function rgbToHex(r, g, b) {
   return "#" + ((1 << 24) + (constrain(r) << 16) + (constrain(g) << 8) + constrain(b)).toString(16).slice(1);
 }
 
-class BoilerplateScene extends React.Component {
+export class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -132,12 +145,16 @@ class BoilerplateScene extends React.Component {
 
         <Sky/>
 
+        <Light type="ambient" color="#666"/>
         <Light type="point" intensity="1" color="#ddd" position="-10 0 10"/>
+
+        <Temple position={`0 -10 0`}/>
 
         <Paddle position={`-5 0 ${-5 + this.state.osc.f1 * -5}`} />
         <Paddle position={`5 0 ${-5 + this.state.osc.f4 * -5}`} />
 
         <Ball position={`${x} ${y} ${z}`} color={rgbToHex(128 + acc.x * 12.8, 128 + acc.y * 12.8, 128 + acc.z * 12.8)}/>
+        <Ball position={`${x} ${y + 4} ${z}`} color={rgbToHex(128 + acc.x * 12.8, 128 + acc.y * 12.8, 128 + acc.z * 12.8)}/>
 
         <Pedal position="-2 -3 -10" depression={this.state.osc.stairmaster || 0}/>
         <Pedal position="2 -3 -10" depression={1 - this.state.osc.stairmaster || 0}/>
@@ -145,5 +162,3 @@ class BoilerplateScene extends React.Component {
     );
   }
 }
-
-ReactDOM.render(<BoilerplateScene/>, document.querySelector('.scene-container'));

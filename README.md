@@ -3,7 +3,7 @@
 Serve the webapp:
 ```bash
 npm install
-npm run serve-js
+npm start
 ```
 
 Start the Web Socket server in another terminal:
