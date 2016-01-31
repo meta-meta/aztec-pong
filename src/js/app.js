@@ -24,6 +24,21 @@ class Temple extends React.Component {
   }
 }
 
+class Cloud extends React.Component {
+  render() {
+    const {scale} = this.props;
+    return (
+      <Entity loader={{src: 'url(models/model_cloud_01.dae)', format: 'collada'}}
+              material={{color: '#fff', transparent: true, opacity: 0.2}}
+              rotation={`0 180 0`}
+              scale={`${scale} ${scale} ${scale}`}
+              position={this.props.position}
+      >
+      </Entity>
+    );
+  }
+}
+
 class Paddle extends React.Component {
   render() {
     const {width, height, depth, color} = this.props;
@@ -66,7 +81,7 @@ class Pedal extends React.Component {
   render() {
     return (
       <Entity rotation={`${-30 + 60 * this.props.depression} 0 0`} position={this.props.position}>
-        <Entity geometry="primitive: box; width: 2; height: 0.5; depth: 3"
+        <Entity geometry="primitive: box; width: 1.5; height: 0.5; depth: 2.5"
                 material={{color: '#555', metalness: 1}}
                 position="0 0 3"
         />
@@ -224,11 +239,20 @@ export class App extends React.Component {
   render() {
     let {x, y, z, r, rotation} = this.state.ball;
     let {acc, stairmaster} = this.state.osc;
-    let {paddle1, paddle2} = this.state;
+    let {paddle1, paddle2, elevation} = this.state;
 
     return (
       <Scene>
-        <Camera y={this.state.elevation}>{/*<Cursor/>*/}</Camera>
+        <Entity wasd-controls position={`0 ${elevation + 8} 10`}>
+          <Camera>{/*<Cursor/>*/}</Camera>
+
+          { stairmaster ?
+            <Entity position={`0 -10 -1`}>
+              <Pedal position="-1 0 0" depression={this.state.osc.stairmaster}/>
+              <Pedal position="1 0 0" depression={1 - this.state.osc.stairmaster}/>
+            </Entity> : null
+          }
+        </Entity>
 
         <Sky/>
 
@@ -238,6 +262,10 @@ export class App extends React.Component {
         <Light type="point" intensity="2" distance="20" color="#0f0" position="100 -40 260"/>
 
         <Temple position={`0 -40 56`}/>
+
+        <Cloud position={`4 80 3`} scale={2} />
+        <Cloud position={`-5 20 -2`} scale={0.5} />
+        <Cloud position={`7 30 -5`} scale={0.5} />
 
         <Arena position={`0 -0.4 0`} width={this.state.arena.width} height={0.1} depth={this.state.arena.depth} />
 
@@ -254,14 +282,6 @@ export class App extends React.Component {
 
         <Ball position={`${x} ${y} ${z}`} rotation={`0 ${rotation} 0`} radius={r}
               color={rgbToHex(128 + acc.x * 12.8, 128 + acc.y * 12.8, 128 + acc.z * 12.8)}/>
-
-        { stairmaster ?
-          <Entity>
-            <Pedal position="-2 7 0" depression={this.state.osc.stairmaster}/>
-            <Pedal position="2 7 0" depression={1 - this.state.osc.stairmaster}/>
-          </Entity> : null
-        }
-
       </Scene>
     );
   }
