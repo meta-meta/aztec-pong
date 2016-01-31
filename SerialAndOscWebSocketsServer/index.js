@@ -2,7 +2,16 @@ var osc = require("osc"),
     express = require("express"),
     WebSocket = require("ws");
 
-var oscPort;
+// serial
+var COM_PORT = 'COM5';
+var BAUD_RATE = 115200;
+
+//OSC
+var OSC_PORT = 57121;
+var oscPorts = [];
+
+//Web Sockets
+var WS_PORT = 8081;
 
 var getIPAddresses = function () {
     var os = require("os"),
@@ -25,7 +34,7 @@ var getIPAddresses = function () {
 // Bind to a UDP socket to listen for incoming OSC events.
 var udpPort = new osc.UDPPort({
     localAddress: "0.0.0.0",
-    localPort: 57121
+    localPort: OSC_PORT
 });
 
 udpPort.on("ready", function () {
@@ -41,27 +50,32 @@ udpPort.open();
 
 // Create an Express-based Web Socket server to which OSC messages will be relayed.
 var app = express(),
-    server = app.listen(8081),
+    server = app.listen(WS_PORT),
     wss = new WebSocket.Server({
         server: server
     });
 
 wss.on("connection", function (socket) {
     console.log("A Web Socket connection has been established!");
-    var socketPort = oscPort = new osc.WebSocketPort({
+
+    var socketPort = new osc.WebSocketPort({
         socket: socket
     });
+
+    oscPorts.push(socketPort);
+
+    console.log('new oscPort');
 
     var relay = new osc.Relay(udpPort, socketPort, {
         raw: true
     });
+
+    console.log('new relay');
 });
 
-
-
 var com = require("serialport");
-var serialPort = new com.SerialPort("COM5", {
-    baudrate: 115200,
+var serialPort = new com.SerialPort(COM_PORT, {
+    baudrate: BAUD_RATE,
     parser: com.parsers.readline('\r\n')
 });
 
@@ -85,9 +99,16 @@ serialPort.on("open", function () {
             var normalizedVal = constrain(mapVal(d[12], 375, 885, 0, 1), 0, 1);
             var n = Math.pow(normalizedVal, 0.55);
 
-            oscPort && oscPort.send({
-                address: "/stepper",
-                args: n
+            oscPorts.forEach((oscPort, i) => {
+                try{
+                    oscPort.send({
+                        address: "/stepper",
+                        args: n
+                    })
+                }
+                catch (err) {
+                    oscPorts.splice(i);
+                }
             });
         }
 

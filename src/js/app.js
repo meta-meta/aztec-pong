@@ -70,7 +70,7 @@ class BoilerplateScene extends React.Component {
     window.setInterval(this.tick.bind(this), 17);
 
     this.oscPort = new OSC.WebSocketPort({
-      url: "ws://localhost:8081"
+      url: `ws://${window.location.hostname}:8081`
     });
 
 
