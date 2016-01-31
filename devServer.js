@@ -19,7 +19,7 @@ app.get('*', function(req, res) {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(8080, 'localhost', function(err) {
+app.listen(8080, '0.0.0.0', function(err) {
   if (err) {
     console.log(err);
     return;
