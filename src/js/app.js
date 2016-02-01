@@ -120,6 +120,7 @@ export class App extends React.Component {
       velocity: {x: 3, y: 0, z: 3},
       t: 0,
       osc: {acc: {}},
+      keys: { 38: false, 40: false },
       elevation: 3
     }
   }
@@ -128,6 +129,7 @@ export class App extends React.Component {
     window.setInterval(this.tick.bind(this), 17);
 
     window.addEventListener('keydown', this.handleKeyDown.bind(this));
+    window.addEventListener('keyup', this.handleKeyUp.bind(this));
 
     this.oscPort = new OSC.WebSocketPort({
       url: `ws://${window.location.hostname}:8081`
@@ -162,25 +164,16 @@ export class App extends React.Component {
   }
 
   handleKeyDown(e) {
-    let {paddle1, paddle2, arena} = this.state;
+    this.setState({keys: Object.assign({}, this.state.keys, {[e.keyCode]: true})});
+  }
 
-    if (e.keyCode === 38 && paddle1.z - paddle1.width/2 >= -arena.width/2) {
-      this.setState({
-        paddle1: Object.assign({}, paddle1, {z: paddle1.z - 0.2}),
-        paddle2: Object.assign({}, paddle2, {z: paddle2.z + 0.2})
-      });
-    }
-    if (e.keyCode === 40 && paddle1.z + paddle1.width/2 <= arena.width/2) {
-      this.setState({
-        paddle1: Object.assign({}, paddle1, {z: paddle1.z + 0.2}),
-        paddle2: Object.assign({}, paddle2, {z: paddle2.z - 0.2})
-      });
-    }
+  handleKeyUp(e) {
+    this.setState({keys: Object.assign({}, this.state.keys, {[e.keyCode]: false})});
   }
 
   tick() {
     let dt_seconds = .017;
-    let {t, velocity, ball, paddle1, paddle2, arena, elevation} = this.state;
+    let {t, velocity, ball, paddle1, paddle2, arena, elevation, keys} = this.state;
     let {x, y, z, r, rotation} = ball;
 
     let isCollision = paddle => Math.abs(paddle.z - ball.z) < (paddle.width / 2 + ball.r);
@@ -207,6 +200,21 @@ export class App extends React.Component {
     hitPaddle1();
     hitPaddle2();
 
+    // keyboard controls to move paddles
+    const dPaddle = 10 * dt_seconds;
+    if (keys[38] && paddle1.z - paddle1.width/2 >= -arena.width/2) {
+      this.setState({
+        paddle1: Object.assign({}, paddle1, {z: paddle1.z - dPaddle}),
+        paddle2: Object.assign({}, paddle2, {z: paddle2.z + dPaddle})
+      });
+    }
+    if (keys[40] && paddle1.z + paddle1.width/2 <= arena.width/2) {
+      this.setState({
+        paddle1: Object.assign({}, paddle1, {z: paddle1.z + dPaddle}),
+        paddle2: Object.assign({}, paddle2, {z: paddle2.z - dPaddle})
+      });
+    }
+
     //hit wall
     if (ball.z - ball.r < -arena.width/2) {
       velocity = Object.assign({}, velocity, {z: Math.abs(velocity.z)});
@@ -217,7 +225,7 @@ export class App extends React.Component {
 
     if(Math.abs(ball.x) > 23/2) {
       this.setState({
-        // elevation: elevation + 1,
+         elevation: elevation + 1,
         ball: {x: 0, y, z, r, rotation}
       });
     } else {
