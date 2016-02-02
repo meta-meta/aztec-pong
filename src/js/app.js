@@ -11,7 +11,6 @@ import Cursor from './components/Cursor';
 import Light from './components/Light';
 import Sky from './components/Sky';
 
-
 class Temple extends React.Component {
   render() {
     return (
@@ -121,7 +120,9 @@ export class App extends React.Component {
       t: 0,
       osc: {acc: {}},
       keys: { 38: false, 40: false },
-      elevation: 3
+      elevation: 3,
+      elevationVel: 0,
+      lightColor: "#0f0"
     }
   }
 
@@ -173,7 +174,7 @@ export class App extends React.Component {
 
   tick() {
     let dt_seconds = .017;
-    let {t, velocity, ball, paddle1, paddle2, arena, elevation, keys} = this.state;
+    let {t, velocity, ball, paddle1, paddle2, arena, elevation, elevationVel, keys} = this.state;
     let {x, y, z, r, rotation} = ball;
 
     let isCollision = paddle => Math.abs(paddle.z - ball.z) < (paddle.width / 2 + ball.r);
@@ -223,12 +224,18 @@ export class App extends React.Component {
       velocity = Object.assign({}, velocity, {z: -1 * Math.abs(velocity.z)});
     }
 
-    if(Math.abs(ball.x) > 23/2) {
+    if (Math.abs(ball.x) > 23/2) {
       this.setState({
-         elevation: elevation + 1,
+        lightColor: "#0f0",
+        elevationVel: elevationVel + 0.07,
         ball: {x: 0, y, z, r, rotation}
       });
     } else {
+      if (Math.abs(ball.x) > arena.width/2) {
+        this.setState({
+          lightColor: "#f00"
+        });
+      }
       this.setState({
         ball: {
           x: x + dt_seconds * velocity.x,
@@ -238,7 +245,9 @@ export class App extends React.Component {
           rotation: rotation + 360 * dt_seconds
         },
         t: t + dt_seconds,
-        velocity
+        velocity,
+        elevationVel: elevationVel * 0.95,
+        elevation: elevation + elevationVel
       });
     }
   }
@@ -250,7 +259,7 @@ export class App extends React.Component {
 
     return (
       <Scene>
-        <Entity wasd-controls position={`0 ${elevation + 8} 10`}>
+        <Entity position={`0 ${elevation + 8} 10`}>
           <Camera>{/*<Cursor/>*/}</Camera>
 
           { stairmaster ?
@@ -263,10 +272,10 @@ export class App extends React.Component {
 
         <Sky/>
 
+        {/*Light doesn't know what to do with the position component for some reason*/}
         <Light type="ambient" color="#666"/>
-        <Light type="point" intensity="1" color="#766" position="-5 0 10"/>
-
-        <Light type="point" intensity="2" distance="20" color="#0f0" position="100 -40 260"/>
+        <Light type="point" intensity="1" color="#766"/>
+        <Light type="point" intensity="2" distance="20" color={this.state.lightColor}/>
 
         <Temple position={`0 -40 56`}/>
 
