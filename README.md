@@ -1,3 +1,9 @@
+## Aztec Pong
+
+Use the up and down arrows to move the paddles
+mouse look
+
+
 ### Getting Started
 
 Serve the webapp:
