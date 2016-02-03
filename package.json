@@ -1,17 +1,20 @@
 {
-  "name": "react-transform-boilerplate",
+  "name": "aframe-react-boilerplate",
   "version": "1.0.0",
   "description": "A new Webpack boilerplate with hot reloading React components, and error handling on module and component level.",
   "scripts": {
     "clean": "rimraf dist",
     "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.prod.js",
     "build": "npm run clean && npm run build:webpack",
+    "preghpages": "npm run build && rm -rf gh-pages && cp -r src gh-pages && cp dist/bundle.js gh-pages",
+    "ghpages": "npm run preghpages && ghpages -p gh-pages",
+    "gh-pages": "npm run ghpages",
     "start": "node devServer.js",
     "lint": "eslint src"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/gaearon/react-transform-boilerplate.git"
+    "url": "https://github.com/meta-meta/aframe-react-boilerplate.git"
   },
   "keywords": [
     "react",
@@ -46,6 +49,7 @@
     "eslint-plugin-react": "^3.11.3",
     "eventsource-polyfill": "^0.9.6",
     "express": "^4.13.3",
+    "ghpages": "0.0.3",
     "json-loader": "^0.5.4",
     "rimraf": "^2.4.3",
     "style-loader": "^0.13.0",
@@ -58,6 +62,7 @@
     "aframe-react": "^1.0.0",
     "babel-polyfill": "^6.3.14",
     "cannon": "^0.6.2",
+    "lodash": "^4.2.0",
     "osc": "2.0.0",
     "react": "^0.14.3",
     "react-dom": "^0.14.3"

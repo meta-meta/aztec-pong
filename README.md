@@ -18,3 +18,18 @@ Then head over to localhost:8080
 
 
 Send OSC messages over port `57121`
+
+
+
+### gh-pages
+
+change to your repo in package.json:
+```json
+"repository": {
+    "type": "git",
+    "url": "https://github.com/meta-meta/aframe-react-boilerplate.git"
+  },
+```
+```bash
+npm run ghpages
+```
