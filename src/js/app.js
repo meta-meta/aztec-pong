@@ -3,7 +3,7 @@ import 'babel-polyfill';
 import {Animation, Entity, Scene} from 'aframe-react';
 import React from 'react';
 import ReactDOM from 'react-dom';
-//import OSC from 'osc/dist/osc-browser';
+import OSC from 'osc/dist/osc-browser';
 
 import rgbToHex from './util/util.js';
 import Camera from './components/Camera';
