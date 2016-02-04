@@ -3,7 +3,7 @@ import 'babel-polyfill';
 import {Animation, Entity, Scene} from 'aframe-react';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import OSC from 'osc/dist/osc-browser';
+//import OSC from 'osc/dist/osc-browser';
 
 import rgbToHex from './util/util.js';
 import Camera from './components/Camera';
@@ -100,17 +100,13 @@ export class App extends React.Component {
         depth: arenaSize
       },
       paddle1: {
-        x: -arenaSize/2,
-        y: 0,
-        z: 0,
+        pos: new THREE.Vector3(-arenaSize/2, 0, 0),
         width: 1,
         height: 0.5,
         depth: 0.1
       },
       paddle2: {
-        x: arenaSize/2,
-        y: 0,
-        z: 0,
+        pos: new THREE.Vector3(arenaSize/2, 0, 0),
         width: 1,
         height: 0.5,
         depth: 0.1
@@ -155,8 +151,8 @@ export class App extends React.Component {
         osc.acc = {x: msg.args[0], y: msg.args[2], z: msg.args[1]};
       }
 
-      paddle1.z = (osc.stairmaster - 0.5) * this.state.arena.width;
-      paddle2.z = (1 - osc.stairmaster - 0.5) * this.state.arena.width;
+      paddle1.pos.z = (osc.stairmaster - 0.5) * this.state.arena.width;
+      paddle2.pos.z = (1 - osc.stairmaster - 0.5) * this.state.arena.width;
 
       this.setState({osc, paddle1, paddle2});
     });
@@ -177,12 +173,12 @@ export class App extends React.Component {
     let {t, velocity, ball, paddle1, paddle2, arena, elevation, elevationVel, keys} = this.state;
     let {x, y, z, r, rotation} = ball;
 
-    let isCollision = paddle => Math.abs(paddle.z - ball.z) < (paddle.width / 2 + ball.r);
+    let isCollision = paddle => Math.abs(paddle.pos.z - ball.z) < (paddle.width / 2 + ball.r);
 
     let hitPaddle1 = () => {
       let ballEdge = ball.x - ball.r;
-      let strikingSurface = paddle1.x + (paddle1.depth / 2);
-      let backSurface = paddle1.x - (paddle1.depth / 2);
+      let strikingSurface = paddle1.pos.x + (paddle1.depth / 2);
+      let backSurface = paddle1.pos.x - (paddle1.depth / 2);
 
       if (ballEdge < strikingSurface && ballEdge > backSurface && isCollision(paddle1)) {
         velocity = Object.assign({}, velocity, {x: Math.abs(velocity.x)});
@@ -191,8 +187,8 @@ export class App extends React.Component {
 
     let hitPaddle2 = () => {
       let ballEdge = ball.x + ball.r;
-      let strikingSurface = paddle2.x - (paddle2.depth / 2);
-      let backSurface = paddle2.x + (paddle2.depth / 2);
+      let strikingSurface = paddle2.pos.x - (paddle2.depth / 2);
+      let backSurface = paddle2.pos.x + (paddle2.depth / 2);
 
       if (ballEdge > strikingSurface && ballEdge < backSurface && isCollision(paddle2)) {
         velocity = Object.assign({}, velocity, {x: -1 * Math.abs(velocity.x)});
@@ -203,17 +199,13 @@ export class App extends React.Component {
 
     // keyboard controls to move paddles
     const dPaddle = 10 * dt_seconds;
-    if (keys[38] && paddle1.z - paddle1.width/2 >= -arena.width/2) {
-      this.setState({
-        paddle1: Object.assign({}, paddle1, {z: paddle1.z - dPaddle}),
-        paddle2: Object.assign({}, paddle2, {z: paddle2.z + dPaddle})
-      });
+    if (keys[38] && paddle1.pos.z - paddle1.width/2 >= -arena.width/2) {
+      this.state.paddle1.pos.z = paddle1.pos.z - dPaddle;
+      this.state.paddle2.pos.z = paddle2.pos.z + dPaddle;
     }
-    if (keys[40] && paddle1.z + paddle1.width/2 <= arena.width/2) {
-      this.setState({
-        paddle1: Object.assign({}, paddle1, {z: paddle1.z + dPaddle}),
-        paddle2: Object.assign({}, paddle2, {z: paddle2.z - dPaddle})
-      });
+    if (keys[40] && paddle1.pos.z + paddle1.width/2 <= arena.width/2) {
+      this.state.paddle1.pos.z = paddle1.pos.z + dPaddle;
+      this.state.paddle2.pos.z = paddle2.pos.z - dPaddle;
     }
 
     //hit wall
@@ -224,17 +216,17 @@ export class App extends React.Component {
       velocity = Object.assign({}, velocity, {z: -1 * Math.abs(velocity.z)});
     }
 
-    if (Math.abs(ball.x) > 23/2) {
+    let out_of_arena = Math.abs(ball.x) > 23/2;
+    if (out_of_arena) {
       this.setState({
         lightColor: "#0f0",
         elevationVel: elevationVel + 0.07,
         ball: {x: 0, y, z, r, rotation}
       });
     } else {
-      if (Math.abs(ball.x) > arena.width/2) {
-        this.setState({
-          lightColor: "#f00"
-        });
+      let out_of_bounds = Math.abs(ball.x) > arena.width/2;
+      if (out_of_bounds) {
+        this.setState({ lightColor: "#f00" });
       }
       this.setState({
         ball: {
@@ -250,6 +242,8 @@ export class App extends React.Component {
         elevation: elevation + elevationVel
       });
     }
+
+    this.forceUpdate();
   }
 
   render() {
@@ -262,7 +256,7 @@ export class App extends React.Component {
         <Entity position={`0 ${elevation + 8} 10`}>
           <Camera>{/*<Cursor/>*/}</Camera>
 
-          { stairmaster ?
+          { !stairmaster ?
             <Entity position={`0 -10 -1`}>
               <Pedal position="-1 0 0" depression={this.state.osc.stairmaster}/>
               <Pedal position="1 0 0" depression={1 - this.state.osc.stairmaster}/>
@@ -282,15 +276,16 @@ export class App extends React.Component {
         <Cloud position={`4 80 3`} scale={2} />
         <Cloud position={`-5 20 -2`} scale={0.5} />
         <Cloud position={`7 30 -5`} scale={0.5} />
+        <Cloud position={`7 50 -5`} scale={0.5} />
 
         <Arena position={`0 -0.4 0`} width={this.state.arena.width} height={0.1} depth={this.state.arena.depth} />
 
-        <Paddle position={`${paddle1.x} ${paddle1.y} ${paddle1.z}`}
+        <Paddle position={`${paddle1.pos.x} ${paddle1.pos.y} ${paddle1.pos.z}`}
                 width={paddle1.width}
                 height={paddle1.height}
                 depth={paddle1.depth}
                 color="#faa"/>
-        <Paddle position={`${paddle2.x} ${paddle2.y} ${paddle2.z}`}
+        <Paddle position={`${paddle2.pos.x} ${paddle2.pos.y} ${paddle2.pos.z}`}
                 width={paddle2.width}
                 height={paddle2.height}
                 depth={paddle2.depth}
