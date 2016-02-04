@@ -94,6 +94,8 @@ export class App extends React.Component {
     super(props);
     let arenaSize = 15;
 
+    this.tick = this.tick.bind(this);
+
     this.state = {
       arena: {
         width: arenaSize,
@@ -123,7 +125,7 @@ export class App extends React.Component {
   }
 
   componentDidMount() {
-    window.setInterval(this.tick.bind(this), 17);
+    window.app = this;
 
     window.addEventListener('keydown', this.handleKeyDown.bind(this));
     window.addEventListener('keyup', this.handleKeyUp.bind(this));
@@ -169,7 +171,10 @@ export class App extends React.Component {
   }
 
   tick() {
-    let dt_seconds = .017;
+    const prevMillis = this.millis || Date.now();
+    this.millis = Date.now();
+    let dt_seconds = (this.millis - prevMillis) / 1000;
+
     let {t, velocity, ball, paddle1, paddle2, arena, elevation, elevationVel, keys} = this.state;
     let {x, y, z, r, rotation} = ball;
 
@@ -252,7 +257,7 @@ export class App extends React.Component {
     let {paddle1, paddle2, elevation} = this.state;
 
     return (
-      <Scene>
+      <Scene onTick={this.tick}>
         <Entity position={`0 ${elevation + 8} 10`}>
           <Camera>{/*<Cursor/>*/}</Camera>
 
