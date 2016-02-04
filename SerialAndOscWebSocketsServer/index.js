@@ -107,7 +107,7 @@ serialPort.on("open", function () {
                     })
                 }
                 catch (err) {
-                    oscPorts.splice(i);
+                    oscPorts.splice(i, 1);
                 }
             });
         }
