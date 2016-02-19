@@ -25,10 +25,10 @@ let attachToCamera = (cmp) => {
 }
 
 
-function render (controller, player) {
+function render (player) {
   // App shouldn't mutate gameState
   let scene = <Scene onTick={sceneTick}>
-    <App controller={controller} state={gameState}
+    <App state={gameState}
          player={player}
          cameraRef={attachToCamera} />
   </Scene>;
@@ -43,7 +43,7 @@ function sceneTick () {
   let dt_seconds = (this.t_ms - prev_t_ms) / 1000;
 
   gameTick(gameState, camera, networkController, player, dt_seconds); // gameTick mutates gameState
-  render();
+  render(player);
 }
 
 THREE.Vector3.prototype.toAframeString = function() {return `${this.x} ${this.y} ${this.z}`};
@@ -62,7 +62,7 @@ window.entryPoint = () => {
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('keyup', handleKeyUp);
 
-  render(networkController, player);
+  render(player);
 };
 
 
