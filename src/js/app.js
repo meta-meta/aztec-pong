@@ -10,21 +10,22 @@ import Light from './components/Light';
 import Sky from './components/Sky';
 import Arena from './components/Arena';
 import Ball from './components/Ball';
-import Cloud from './components/Cloud';
 import Paddle from './components/Paddle';
-import Temple from './components/Temple';
 
 
 
 let App = (props) => {
   let {state} = props;
   let {ball} = state;
-  let {paddle1, paddle2, elevation} = state;
+  let {paddle1, paddle2} = state;
 
   return (
       <Entity>
-        <Entity position={`0 ${elevation + 8} 10`}>
-          <Camera>{/*<Cursor/>*/}</Camera>
+        <Entity position={`${props.player === '1' ? -11 : 11} 0.5 0`}
+                rotation={`0 ${props.player === '1' ? -90 : 90} 0`}>
+          <Entity ref={props.cameraRef} camera wasd-controls look-controls>
+            <Cursor />
+          </Entity>
         </Entity>
         <Sky/>
 
@@ -33,25 +34,18 @@ let App = (props) => {
         <Light type="point" intensity="1" color="#766"/>
         <Light type="point" intensity="2" distance="20" color={state.lightColor}/>
 
-        <Temple position={`0 -40 56`}/>
-
-        <Cloud position={`4 80 3`} scale={2} />
-        <Cloud position={`-5 20 -2`} scale={0.5} />
-        <Cloud position={`7 30 -5`} scale={0.5} />
-        <Cloud position={`7 50 -5`} scale={0.5} />
-
         <Arena position={`0 -0.4 0`} width={state.arena.width} height={0.1} depth={state.arena.depth} />
 
         <Paddle position={`${paddle1.pos.x} ${paddle1.pos.y} ${paddle1.pos.z}`}
                 width={paddle1.width}
                 height={paddle1.height}
                 depth={paddle1.depth}
-                color="#faa"/>
+                color="#f00"/>
         <Paddle position={`${paddle2.pos.x} ${paddle2.pos.y} ${paddle2.pos.z}`}
                 width={paddle2.width}
                 height={paddle2.height}
                 depth={paddle2.depth}
-                color="#aaf"/>
+                color="#00f"/>
 
         <Ball position={`${ball.x} ${ball.y} ${ball.z}`} rotation={`0 ${ball.rotation} 0`} radius={ball.r} />
       </Entity>

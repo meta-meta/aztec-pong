@@ -1,7 +1,18 @@
 import _ from 'lodash';
 
 
-export default function gameTick (state, dt_seconds) {
+export default function gameTick (state, camera, networkController, player, dt_seconds) {
+
+
+  const p = camera.getWorldPosition();
+  const d = camera.getWorldDirection();
+  const ray = new THREE.Ray(p, d);
+  const plane = new THREE.Plane(
+      new THREE.Vector3(player === '1' ? 1 : -1, 0, 0),
+      state.arena.width / 2);
+  const paddleZ = ray.intersectPlane(plane).z;
+
+
   let {t, velocity, ball, paddle1, paddle2, arena, elevation, elevationVel, keys} = state;
   let {x, y, z, r, rotation} = ball;
 
@@ -29,16 +40,23 @@ export default function gameTick (state, dt_seconds) {
   hitPaddle1();
   hitPaddle2();
 
+
+  const mypaddle = player === '1' ? paddle1 : paddle2;
+
+
   // keyboard controls to move paddles
   const dPaddle = 10 * dt_seconds;
-  if (keys[38] && paddle1.pos.z - paddle1.width/2 >= -arena.width/2) {
-    state.paddle1.pos.z = paddle1.pos.z - dPaddle;
-    state.paddle2.pos.z = paddle2.pos.z + dPaddle;
+  if (keys[38] && mypaddle.pos.z - mypaddle.width/2 >= -arena.width/2) {
+    mypaddle.pos.z -= dPaddle;
+    //state.paddle2.pos.z = paddle2.pos.z + dPaddle;
   }
-  if (keys[40] && paddle1.pos.z + paddle1.width/2 <= arena.width/2) {
-    state.paddle1.pos.z = paddle1.pos.z + dPaddle;
-    state.paddle2.pos.z = paddle2.pos.z - dPaddle;
+  if (keys[40] && mypaddle.pos.z + mypaddle.width/2 <= arena.width/2) {
+    mypaddle.pos.z += dPaddle;
+    //state.paddle2.pos.z = paddle2.pos.z - dPaddle;
   }
+
+  const w = state.arena.width / 2;
+  mypaddle.pos.z = THREE.Math.clamp(paddleZ, -w, w);
 
   //hit wall
   if (ball.z - ball.r < -arena.width/2) {
@@ -51,7 +69,6 @@ export default function gameTick (state, dt_seconds) {
   let out_of_arena = Math.abs(ball.x) > 23/2;
   if (out_of_arena) {
     state.lightColor= "#0f0";
-    state.elevationVel += 0.07;
     state.ball = {x: 0, y, z, r, rotation};
   } else {
     let out_of_bounds = Math.abs(ball.x) > arena.width/2;
@@ -65,7 +82,7 @@ export default function gameTick (state, dt_seconds) {
     state.ball.rotation += 360 * dt_seconds;
     state.t += dt_seconds;
     state.velocity = velocity;
-    state.elevationVel *= .95;
-    state.elevation += elevationVel;
   }
+
+  networkController.onSendMyPaddlePosition(mypaddle.pos.z);
 }
