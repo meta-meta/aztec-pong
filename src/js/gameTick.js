@@ -13,8 +13,8 @@ export default function gameTick (state, camera, networkController, player, dt_s
   const paddleZ = ray.intersectPlane(plane).z;
 
 
-  let {t, velocity, ball, paddle1, paddle2, arena, elevation, elevationVel, keys} = state;
-  let {x, y, z, r, rotation} = ball;
+  let {velocity, ball, paddle1, paddle2, arena, keys} = state;
+  let {y, z, r, rotation} = ball;
 
   let isCollision = paddle => Math.abs(paddle.pos.z - ball.z) < (paddle.width / 2 + ball.r);
 
@@ -53,6 +53,9 @@ export default function gameTick (state, camera, networkController, player, dt_s
   if (keys[40] && mypaddle.pos.z + mypaddle.width/2 <= arena.width/2) {
     mypaddle.pos.z += dPaddle;
     //state.paddle2.pos.z = paddle2.pos.z - dPaddle;
+  }
+  if (keys[32]) {
+    networkController.sendGameStart();
   }
 
   const w = state.arena.width / 2;
