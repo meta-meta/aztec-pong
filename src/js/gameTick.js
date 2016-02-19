@@ -24,7 +24,7 @@ export default function gameTick (state, camera, networkController, player, dt_s
     let backSurface = paddle1.pos.x - (paddle1.depth / 2);
 
     if (ballEdge < strikingSurface && ballEdge > backSurface && isCollision(paddle1)) {
-      velocity = Object.assign({}, velocity, {x: Math.abs(velocity.x)});
+      velocity.x = Math.abs(velocity.x);
     }
   };
 
@@ -34,7 +34,7 @@ export default function gameTick (state, camera, networkController, player, dt_s
     let backSurface = paddle2.pos.x + (paddle2.depth / 2);
 
     if (ballEdge > strikingSurface && ballEdge < backSurface && isCollision(paddle2)) {
-      velocity = Object.assign({}, velocity, {x: -1 * Math.abs(velocity.x)});
+      velocity.x = -1 * Math.abs(velocity.x);
     }
   };
   hitPaddle1();
