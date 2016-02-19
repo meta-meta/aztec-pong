@@ -1,5 +1,9 @@
 import 'babel-polyfill';
-import 'aframe-core';
+import {registerComponent, components} from 'aframe-core';
+import NoClickLookControls from 'aframe-no-click-look-controls';
+
+registerComponent('no-click-look-controls', NoClickLookControls.component);
+
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -33,7 +37,7 @@ function render (player) {
            player={player}
            cameraRef={attachToCamera} />
     </Scene>
-    <pre style={{position: 'absolute', zIndex: 1}}>{JSON.stringify(gameState, null, 2)}</pre>
+    <pre style={{position: 'absolute', zIndex: 1, pointerEvents: 'none'}}>{JSON.stringify(gameState, null, 2)}</pre>
   </div>;
 
   ReactDOM.render(reactApp, document.getElementById('root'));

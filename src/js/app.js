@@ -23,7 +23,7 @@ let App = (props) => {
       <Entity>
         <Entity position={`${props.player === '1' ? -11 : 11} 0.5 0`}
                 rotation={`0 ${props.player === '1' ? -90 : 90} 0`}>
-          <Entity ref={props.cameraRef} camera wasd-controls look-controls>
+          <Entity ref={props.cameraRef} camera wasd-controls no-click-look-controls={{maxyaw: 1.5}}>
             <Cursor />
           </Entity>
         </Entity>

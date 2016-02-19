@@ -10,8 +10,8 @@ export default function gameTick (state, camera, networkController, player, dt_s
   const plane = new THREE.Plane(
       new THREE.Vector3(player === '1' ? 1 : -1, 0, 0),
       state.arena.width / 2);
-  const paddleZ = ray.intersectPlane(plane).z;
 
+  const intersectAt = ray.intersectPlane(plane);
 
   let {velocity, ball, paddle1, paddle2, arena, keys} = state;
   let {y, z, r, rotation} = ball;
@@ -59,6 +59,7 @@ export default function gameTick (state, camera, networkController, player, dt_s
   }
 
   const w = state.arena.width / 2;
+  const paddleZ = intersectAt ? intersectAt.z : mypaddle.pos.z;
   mypaddle.pos.z = THREE.Math.clamp(paddleZ, -w, w);
 
   //hit wall

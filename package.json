@@ -2,6 +2,7 @@
   "name": "aztec-pong",
   "version": "1.0.0",
   "description": "An Aframe-React experiment",
+  "license": "MIT",
   "scripts": {
     "clean": "rimraf dist",
     "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.prod.js",
@@ -54,6 +55,7 @@
   },
   "dependencies": {
     "aframe-core": "0.1.0",
+    "aframe-no-click-look-controls": "^1.0.4",
     "aframe-react": "^1.0.0",
     "babel-polyfill": "^6.3.14",
     "cannon": "^0.6.2",
