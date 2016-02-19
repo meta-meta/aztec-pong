@@ -22,18 +22,21 @@ var player = null;
 let attachToCamera = (cmp) => {
   let el = ReactDOM.findDOMNode(cmp);
   camera = el.components.camera.camera;
-}
+};
 
 
 function render (player) {
   // App shouldn't mutate gameState
-  let scene = <Scene onTick={sceneTick}>
-    <App state={gameState}
-         player={player}
-         cameraRef={attachToCamera} />
-  </Scene>;
+  let reactApp = <div>
+    <Scene onTick={sceneTick}>
+      <App state={gameState}
+           player={player}
+           cameraRef={attachToCamera} />
+    </Scene>
+    <pre style={{position: 'absolute', zIndex: 1}}>{JSON.stringify(gameState, null, 2)}</pre>
+  </div>;
 
-  ReactDOM.render(scene, document.getElementById('root'));
+  ReactDOM.render(reactApp, document.getElementById('root'));
 }
 
 
