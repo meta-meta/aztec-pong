@@ -1,73 +1,46 @@
-import 'babel-polyfill';
-import {registerComponent, components} from 'aframe-core';
-import NoClickLookControls from 'aframe-no-click-look-controls';
-
-registerComponent('no-click-look-controls', NoClickLookControls.component);
-
-
+import './js/monkeypatches';
+import _ from 'lodash';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Scene} from 'aframe-react';
-import WebSocket from 'ws';
-
-import buildInitialGameState from './js/initialGameState';
-import gameTick from './js/gameTick';
-import App from './js/App';
-import NetworkController from './js/NetworkController';
 
 
+import initialGameState from './js/initialGameState';
+import NetworkController from './js/controllers/NetworkController';
+import GameController from './js/controllers/GameController';
+import InputController from './js/controllers/InputController';
+import Root from './js/Root';
 
-var camera = null;
-var gameState = null;
-var networkController = null;
-var player = null;
-
-
-let attachToCamera = (cmp) => {
-  let el = ReactDOM.findDOMNode(cmp);
-  camera = el.components.camera.camera;
-};
-
-
-function render (player) {
-  // App shouldn't mutate gameState
-  let reactApp = <div>
-    <Scene onTick={sceneTick}>
-      <App state={gameState}
-           player={player}
-           cameraRef={attachToCamera} />
-    </Scene>
-    <pre style={{position: 'absolute', zIndex: 1, pointerEvents: 'none'}}>{JSON.stringify(gameState, null, 2)}</pre>
-  </div>;
-
-  ReactDOM.render(reactApp, document.getElementById('root'));
-}
-
-
-function sceneTick () {
-  const prev_t_ms = this.t_ms || Date.now();
-  this.t_ms = Date.now();
-  let dt_seconds = (this.t_ms - prev_t_ms) / 1000;
-
-  gameTick(gameState, camera, networkController, player, dt_seconds); // gameTick mutates gameState
-  render(player);
-}
-
-THREE.Vector3.prototype.toAframeString = function() {return `${this.x} ${this.y} ${this.z}`};
-window.V3 = (x, y, z) => new THREE.Vector3(x, y, z);
-window.V3toStr = (x, y, z) => V3(x, y, z).toAframeString();
 
 window.entryPoint = () => {
-  gameState = buildInitialGameState();
-  player = window.location.search.substr(1);  // http://localhost:8080/?1
-  networkController = new NetworkController(player, gameState);
+  var player = window.location.search.substr(1);  // http://localhost:8080/?1
+
+  var gameState = initialGameState();
+  var inputState = {keys: {}};
+
+  let network = new NetworkController();
+  let input = new InputController(player);
+  let game = new GameController(player);
+
+  function tick (camera, dt_seconds) {
+
+    let inputEvents = input.readEvents(inputState, camera);
+
+    let networkEvents = network.readEvents();
+
+    // Game is a function of our inputs and their inputs.
+    let gameEvents = game.readEvents(gameState, inputEvents, networkEvents, dt_seconds);
+
+    // Broadcast our inputs, so they can play them forward.
+    network.writeEvents(inputEvents);
+
+    // Broadcast what we think happened. We should eventually receive equiv events from them confirming that they saw it too.
+    //network.writeEvents(gameEvents);
+
+    // Play our game events locally.
+    game.writeEvents(gameState, gameEvents);
+  }
 
 
-  let handleKeyUp = e => gameState.keys[e.keyCode] = false;
-  let handleKeyDown = e => gameState.keys[e.keyCode] = true;
-
-  window.addEventListener('keydown', handleKeyDown);
-  window.addEventListener('keyup', handleKeyUp);
-
-  render(player);
+  let root = <Root gameState={gameState} player={player} tick={tick} />;
+  ReactDOM.render(root, document.getElementById('root'));
 };

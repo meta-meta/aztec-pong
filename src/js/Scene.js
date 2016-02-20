@@ -1,10 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
-import {Animation, Entity, Scene} from 'aframe-react';
+import {Entity} from 'aframe-react';
 
-import rgbToHex from './util/rgb2hex.js';
-
-import Camera from './components/Camera';
 import Cursor from './components/Cursor';
 import Light from './components/Light';
 import Sky from './components/Sky';
@@ -13,8 +10,7 @@ import Ball from './components/Ball';
 import Paddle from './components/Paddle';
 
 
-
-let App = (props) => {
+let Scene = props => {
   let {state} = props;
   let {ball} = state;
   let {paddle1, paddle2} = state;
@@ -52,4 +48,4 @@ let App = (props) => {
   );
 };
 
-export default App;
+export default Scene;
