@@ -21,7 +21,7 @@ export default function buildInitialGameState() {
     },
     ball: {x: 0, y: 0, z: -5, r: 0.25, rotation: 0},
     velocity: {x: 3, y: 0, z: 3},
-    keys: { 38: false, 40: false },
-    lightColor: "#0f0"
+    lightColor: "#0f0",
+    server: "c6102ead.ngrok.io"
   };
 }

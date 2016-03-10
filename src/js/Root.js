@@ -1,9 +1,10 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 
-import UI from './js/UI';
-import AframeGame from './js/util/AframeGame';
+import UI from './UI';
+import AframeGame from './util/AframeGame';
 
-import App from './js/App';
+import Scene from './Scene';
 
 
 // The camera hack is why this component has to exist,
@@ -11,17 +12,18 @@ import App from './js/App';
 
 export default class Root extends React.Component {
   componentDidMount () {
-    this.camera = null; // can we get it here
-    this.cameraHack = cmp => this.camera = ReactDOM.findDOMNode(cmp).components.camera.camera;
+    this.camera = ReactDOM.findDOMNode(this.refs.scene.refs.camera).components.camera.camera;
     this.tick = this.tick.bind(this);
   }
 
   render () {
     let {player, gameState} = this.props;
 
+    /*refresh={this.forceUpdate.bind(this)}*/
+
     return <div>
-      <AframeGame tick={this.tick} refresh={this.forceUpdate}>
-        <App state={gameState} player={player} cameraRef={this.cameraHack} />
+      <AframeGame tick={this.tick.bind(this)} >
+        <Scene ref="scene" state={gameState} player={player} cameraRef={this.cameraHack} />
       </AframeGame>
       <UI player={player} gameState={gameState} />
     </div>;
@@ -29,5 +31,6 @@ export default class Root extends React.Component {
 
   tick (dt_seconds) {
     this.props.tick(this.camera, dt_seconds);
+    this.forceUpdate();
   }
 }

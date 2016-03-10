@@ -17,27 +17,19 @@ window.entryPoint = () => {
   var gameState = initialGameState();
   var inputState = {keys: {}};
 
-  let network = new NetworkController();
-  let input = new InputController(player);
+  let network = new NetworkController(gameState.server, player);
+  let input = new InputController();
   let game = new GameController(player);
 
-  function tick (camera, dt_seconds) {
+  function tick (camera, dt) {
 
     let inputEvents = input.readEvents(inputState, camera);
 
     let networkEvents = network.readEvents();
 
-    // Game is a function of our inputs and their inputs.
-    let gameEvents = game.readEvents(gameState, inputEvents, networkEvents, dt_seconds);
+    game.readAndWriteEvents(gameState, inputEvents, networkEvents, dt);
 
-    // Broadcast our inputs, so they can play them forward.
     network.writeEvents(inputEvents);
-
-    // Broadcast what we think happened. We should eventually receive equiv events from them confirming that they saw it too.
-    //network.writeEvents(gameEvents);
-
-    // Play our game events locally.
-    game.writeEvents(gameState, gameEvents);
   }
 
 

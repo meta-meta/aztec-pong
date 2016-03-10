@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import initialGameState from './js/initialGameState';
+import initialGameState from '../initialGameState';
 
 
 export default class GameController {
@@ -9,122 +9,36 @@ export default class GameController {
     this.buffer = [];
   }
 
-  readEvents (gameState, inputEvents, networkEvents, dt) {
-
-    // input events: camera-lookat, paddle-move-left, paddle-move-right, reset
-    // network events: paddle-move-left, paddle-move-right, reset
-
-    // It doesn't make sense to have both camera moving and paddle left/right at same time,
-    // they are conflicting controls.
+  readAndWriteEvents (gameState, inputEvents, networkEvents, dt) {
 
 
-    // Speculatively apply the new state in a transaction.
-    // Run business logic, hit detection, out of bounds rules.
-    // Any rule that triggers a state change (e.g. ball changes color) is an event.
+    let inputEventsWithPlayer = _.map(inputEvents,
+        event => _.extend(event, {player: this.player}));
 
+    // first phase - figure out new gameState before collisions
 
+    let allEventsWithPlayer = [].concat(inputEvents, networkEvents);
 
-
-    // Speculate what events would happen given these inputs.
-
-
-
-    let dispatch = {
-      'camera-lookat': (player, position, direction) => {
-        // either our local event, or their network event, doesn't matter.
-        let mypaddle = player === '1' ? gameState.paddle1 : gameState.paddle2;
-        mypaddle.z = PaddleZFromLookat(player, position, direction);
-
-        // Given this new state, are there any game events?
-        // Paddle hit, out of bounds.
-
-        // Generate
-
-      },
-      'reset': () => {
-        // early return - if someone requests a reset, no other events should be processed or broadcasted
+    _.each(allEventsWithPlayer, event => {
+      if (event.type === 'reset') {
+        Object.assign(gameState, initialGameState());
+        return;
       }
-    };
 
-
-    // Did the camera move the paddle to a position, which hit the ball? Speculatively find out now
-
-    // figure out what the current state is and what game events have now happened
-    // as a result of these input and network events
-    // return list of game events
-
-    // Turn the input events into game events (which will be broadcasted and applied locally)
-    let gameEvents = _.map(inputEvents, event => dispatch[event.type].apply(this, event.args));
-
-    this.buffer.push(gameEvents);
-
-    // Network events are applied locally but not broadcasted
-    let localGameEvents = _.map(inputEvents, event => dispatch[event.type].apply(this, event.args));
-
-
-
-
-
-
-
-
-    // moved paddle1, paddle2 (from ui or network)
-    // will their new positions
-    //  - generate a hit? paddle or wall
-    //  - out of bounds
-    //  - out of arena
-
-    //let event = {player: this.player, type: 'reset'};
-    //let event = {player: this.player, type:'paddle', args: [newPos]};
-
-
-    // List of events that happened this tick
-    // Paddle moved to XYZ.
-    // Paddle1 hit ball, ball velocity changed.
-      // {PLAYER: ME, type: paddle-hit-ball, args:[ballVel]}
-    // Ball out of bounds
-    // Game state reset.
-    // Ball moved to new coordinates
-
-    // (need to make sure it is consistent - e.g. if reset was pressed, drop other events.
-    // If they are consistent, the order doesn't matter i think.)
-    // Not all events need be broadcasted over network. We can filter the event stream
-    // to only send certain events. But
-
-    return this.buffer.splice(0, this.buffer.length);
-  }
-
-  writeEvents (gameState, gameEvents) {
-    // Write the events to the state.
-    // Everything must come through an event.
-    // This guarantees a complete understanding of all state transitions at any tick.
-
-    // All local events are also broadcasted over network.
-    // So, we already saw the ball go out of bounds 100ms ago, and now the network message says
-    // the ball was hit. Always trust the network.
-    // So if they say they hit it, believe them, clobber our state here.
-
-
-    // Write through to the gamestate.
-    let dispatch = {
-      'paddle-move-left': (player, newPos) => gameState[`paddle${this.player}`].pos.z = newPos,
-      'reset': (player) => Object.assign(gameState, initialGameState()),
-      'camera-lookat': (player, position, direction) => {
-        let mypaddle = player === '1' ? gameState.paddle1 : gameState.paddle2;
-        mypaddle.z = PaddleZFromLookat(player, position, direction);
-      },
-      outOfBounds: (player) => null,
-      outOfArena: (player) => null
-    };
-
-    _.each(gameEvents, event =>
-        dispatch[event.type].apply(this, [event.player].concat(event.args)));
+      if (event.type ==='camera-lookat') {
+        let position = V3().fromArray(event.args[0]);
+        let direction = V3().fromArray(event.args[1]);
+        // either our local event, or their network event, doesn't matter.
+        let mypaddle = event.player === '1' ? gameState.paddle1 : gameState.paddle2;
+        mypaddle.pos.z = PaddleZFromLookat(gameState, event.player, position, direction);
+      }
+    });
   }
 }
 
 
 
-function PaddleZFromLookat (player, position, direction) {
+function PaddleZFromLookat (gameState, player, position, direction) {
   let ray = new THREE.Ray(position, direction);
   let w = gameState.arena.width / 2;
   let plane = new THREE.Plane(
@@ -132,11 +46,10 @@ function PaddleZFromLookat (player, position, direction) {
       w);
   let intersectAt = ray.intersectPlane(plane);
 
-  let mypaddle = player === '1' ? state.paddle1 : state.paddle2;
+  let mypaddle = player === '1' ? gameState.paddle1 : gameState.paddle2;
   let paddleZ = intersectAt ? intersectAt.z : mypaddle.pos.z;
   return THREE.Math.clamp(paddleZ, -w, w);
 }
-
 
 
 function hitPaddle () {

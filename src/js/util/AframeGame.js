@@ -16,6 +16,6 @@ export default class AframeGame extends React.Component {
     let dt_seconds = (this.t_ms - prev_t_ms) / 1000;
 
     this.props.tick(dt_seconds);
-    this.props.refresh();
+    //this.props.refresh();
   }
 }
