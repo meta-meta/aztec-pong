@@ -26,6 +26,12 @@ Then head over to localhost:8080
 Send OSC messages over port `57121`
 
 
+Run the ws relay and share it over networked
+ * https://ngrok.com/
+ * ./ngrok http 8080 - app (npm start)
+ * ./ngrok http 8081 - relay (wsrelay)
+ * hardcode the gamestate.server to the ws url (without http://)
+
 
 ### gh-pages
 
