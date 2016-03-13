@@ -44,7 +44,7 @@ class Scene extends React.Component {
                   depth={paddle2.depth}
                   color="#00f"/>
 
-          <Ball position={`${ball.x} ${ball.y} ${ball.z}`} rotation={`0 ${ball.rotation} 0`} radius={ball.r} />
+          <Ball position={ball.position.toAframeString()} rotation={`0 ${ball.rotation} 0`} radius={ball.r} />
         </Entity>
     );
   }

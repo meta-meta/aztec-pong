@@ -32,7 +32,59 @@ export default class GameController {
         let mypaddle = event.player === '1' ? gameState.paddle1 : gameState.paddle2;
         mypaddle.pos.z = PaddleZFromLookat(gameState, event.player, position, direction);
       }
+      
     });
+
+    let {ball, arena, paddle1, paddle2} = gameState;
+
+    //hit wall
+    if (ball.position.z - ball.r < -arena.width / 2) {
+      ball.velocity.z = Math.abs(ball.velocity.z);
+    }
+    if (ball.position.z + ball.r > arena.width / 2) {
+      ball.velocity.z = -1 * Math.abs(ball.velocity.z);
+    }
+
+    let out_of_arena = Math.abs(ball.position.x) > 23 / 2;
+    if (out_of_arena) {
+      gameState.lightColor = "#0f0";
+      ball.position.x = 0;
+    } else {
+      let out_of_bounds = Math.abs(ball.position.x) > arena.width / 2;
+      if (out_of_bounds) {
+        gameState.lightColor = "#f00";
+      }
+
+      const dPos = V3().copy(ball.velocity).multiplyScalar(dt);
+      ball.position.add(dPos);
+      gameState.ball.rotation += 360 * dt;
+    }
+
+
+    let isCollision = paddle => Math.abs(paddle.pos.z - ball.position.z) < (paddle.width / 2 + ball.r);
+
+    let hitPaddle1 = () => {
+      let ballEdge = ball.position.x - ball.r;
+      let strikingSurface = paddle1.pos.x + (paddle1.depth / 2);
+      let backSurface = paddle1.pos.x - (paddle1.depth / 2);
+
+      if (ballEdge < strikingSurface && ballEdge > backSurface && isCollision(paddle1)) {
+        ball.velocity.x = Math.abs(ball.velocity.x);
+      }
+    };
+
+    let hitPaddle2 = () => {
+      let ballEdge = ball.position.x + ball.r;
+      let strikingSurface = paddle2.pos.x - (paddle2.depth / 2);
+      let backSurface = paddle2.pos.x + (paddle2.depth / 2);
+
+      if (ballEdge > strikingSurface && ballEdge < backSurface && isCollision(paddle2)) {
+        ball.velocity.x = -1 * Math.abs(ball.velocity.x);
+      }
+    };
+    hitPaddle1();
+    hitPaddle2();
+
   }
 }
 
@@ -52,87 +104,5 @@ function PaddleZFromLookat (gameState, player, position, direction) {
 }
 
 
-function hitPaddle () {
-  let {velocity, ball, paddle1, paddle2, arena, keys} = state;
-  let {y, z, r, rotation} = ball;
-
-  let isCollision = paddle => Math.abs(paddle.pos.z - ball.z) < (paddle.width / 2 + ball.r);
-
-  let hitPaddle1 = () => {
-    let ballEdge = ball.x - ball.r;
-    let strikingSurface = paddle1.pos.x + (paddle1.depth / 2);
-    let backSurface = paddle1.pos.x - (paddle1.depth / 2);
-
-    if (ballEdge < strikingSurface && ballEdge > backSurface && isCollision(paddle1)) {
-      velocity.x = Math.abs(velocity.x);
-    }
-  };
-
-  let hitPaddle2 = () => {
-    let ballEdge = ball.x + ball.r;
-    let strikingSurface = paddle2.pos.x - (paddle2.depth / 2);
-    let backSurface = paddle2.pos.x + (paddle2.depth / 2);
-
-    if (ballEdge > strikingSurface && ballEdge < backSurface && isCollision(paddle2)) {
-      velocity.x = -1 * Math.abs(velocity.x);
-    }
-  };
-  hitPaddle1();
-  hitPaddle2();
-}
 
 
-
-function hitWall (dt) {
-  let {velocity, ball, paddle1, paddle2, arena, keys} = state;
-  let {y, z, r, rotation} = ball;
-
-  //hit wall
-  if (ball.z - ball.r < -arena.width/2) {
-    velocity = Object.assign({}, velocity, {z: Math.abs(velocity.z)});
-  }
-  if (ball.z + ball.r > arena.width/2) {
-    velocity = Object.assign({}, velocity, {z: -1 * Math.abs(velocity.z)});
-  }
-
-  let out_of_arena = Math.abs(ball.x) > 23/2;
-  if (out_of_arena) {
-    state.lightColor= "#0f0";
-    state.ball = {x: 0, y, z, r, rotation};
-  } else {
-    let out_of_bounds = Math.abs(ball.x) > arena.width/2;
-    if (out_of_bounds) {
-      state.lightColor = "#f00";
-    }
-    state.ball.x += dt * velocity.x;
-    state.ball.y += dt * velocity.y;
-    state.ball.z += dt * velocity.z;
-    state.ball.r = r;
-    state.ball.rotation += 360 * dt;
-    state.t += dt;
-    state.velocity = velocity;
-  }
-}
-
-
-function MovePaddles () {
-  const mypaddle = player === '1' ? state.paddle1 : state.paddle2;
-  // keyboard controls to move paddles
-  const dPaddle = 10 * dt_seconds;
-  if (keys[38] && mypaddle.pos.z - mypaddle.width/2 >= -arena.width/2) {
-    mypaddle.pos.z -= dPaddle;
-    //state.paddle2.pos.z = paddle2.pos.z + dPaddle;
-  }
-  if (keys[40] && mypaddle.pos.z + mypaddle.width/2 <= arena.width/2) {
-    mypaddle.pos.z += dPaddle;
-    //state.paddle2.pos.z = paddle2.pos.z - dPaddle;
-  }
-
-
-  const w = state.arena.width / 2;
-  var paddleZ = intersectAt ? intersectAt.z : mypaddle.pos.z;
-  paddleZ = THREE.Math.clamp(paddleZ, -w, w);
-
-  let event = {player: player, type: 'paddle', args: [paddleZ]};
-  mypaddle.pos.z = paddleZ;
-}
